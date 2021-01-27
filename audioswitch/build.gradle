@@ -104,7 +104,7 @@ artifactory {
             publishPom = true
         }
     }
-    clientConfig.info.setBuildNumber(getShortCommitSha())
+//    clientConfig.info.setBuildNumber(getShortCommitSha())
 }
 
 /*

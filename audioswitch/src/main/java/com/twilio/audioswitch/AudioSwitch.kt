@@ -288,45 +288,49 @@ class AudioSwitch {
     }
 
     private fun enumerateDevices(bluetoothHeadsetName: String? = null) {
-        addAvailableAudioDevices(bluetoothHeadsetName)
+        try {
+            addAvailableAudioDevices(bluetoothHeadsetName)
 
-        if (!userSelectedDevicePresent(mutableAudioDevices)) {
-            userSelectedDevice = null
-        }
+            if (!userSelectedDevicePresent(mutableAudioDevices)) {
+                userSelectedDevice = null
+            }
 
-        // Select the audio device
-        logger.d(TAG, "Current user selected AudioDevice = $userSelectedDevice")
-        selectedDevice = if (userSelectedDevice != null) {
-            userSelectedDevice
-        } else if (mutableAudioDevices.size > 0) {
-            val firstAudioDevice = mutableAudioDevices[0]
-            /*
+            // Select the audio device
+            logger.d(TAG, "Current user selected AudioDevice = $userSelectedDevice")
+            selectedDevice = if (userSelectedDevice != null) {
+                userSelectedDevice
+            } else if (mutableAudioDevices.size > 0) {
+                val firstAudioDevice = mutableAudioDevices[0]
+                /*
              * If there was an error starting bluetooth sco, then the selected AudioDevice should
              * be the next valid device in the list.
              */
-            if (firstAudioDevice is BluetoothHeadset &&
-                    bluetoothHeadsetManager?.hasActivationError() == true) {
-                mutableAudioDevices[1]
+                if (firstAudioDevice is BluetoothHeadset &&
+                    bluetoothHeadsetManager?.hasActivationError() == true
+                ) {
+                    mutableAudioDevices[1]
+                } else {
+                    firstAudioDevice
+                }
             } else {
-                firstAudioDevice
+                null
             }
-        } else {
-            null
-        }
 
-        // Activate the device if in the active state
-        if (state == ACTIVATED) {
-            activate()
-        }
-        audioDeviceChangeListener?.let { listener ->
-            selectedDevice?.let { selectedDevice ->
-                listener.invoke(
-                        mutableAudioDevices,
-                        selectedDevice)
-            } ?: run {
-                listener.invoke(mutableAudioDevices, null)
+            // Activate the device if in the active state
+            if (state == ACTIVATED) {
+                activate()
             }
-        }
+            audioDeviceChangeListener?.let { listener ->
+                selectedDevice?.let { selectedDevice ->
+                    listener.invoke(
+                        mutableAudioDevices,
+                        selectedDevice
+                    )
+                } ?: run {
+                    listener.invoke(mutableAudioDevices, null)
+                }
+            }
+        } catch (_: Exception) { }
     }
 
     private fun addAvailableAudioDevices(bluetoothHeadsetName: String?) {
@@ -389,7 +393,7 @@ class AudioSwitch {
         /**
          * The version of the AudioSwitch library.
          */
-        const val VERSION = BuildConfig.VERSION_NAME
+        const val VERSION = "SNAPSHOT"
 
         private val defaultPreferredDeviceList by lazy {
             listOf(BluetoothHeadset::class.java,
